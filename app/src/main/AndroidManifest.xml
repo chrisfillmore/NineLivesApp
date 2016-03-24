@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,7 +29,34 @@
             android:name=".activity.PickActivity"
             android:label="@string/title_activity_pick"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.PoolListActivity"
+            android:label="@string/title_pool_list"
+            android:parentActivityName=".activity.PickActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.playninelives.activity.PickActivity" />
+        </activity>
+        <activity
+            android:name=".activity.PoolDetailActivity"
+            android:label="@string/title_pool_detail"
+            android:parentActivityName=".activity.PoolListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.playninelives.activity.PoolListActivity" />
+        </activity>
+        <activity
+            android:name=".activity.CreatePoolActivity"
+            android:label="@string/title_activity_create_pool"
+            android:parentActivityName=".activity.PoolListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.playninelives.activity.PoolListActivity" />
+        </activity>
     </application>
 
 </manifest>

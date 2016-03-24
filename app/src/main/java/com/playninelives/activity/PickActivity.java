@@ -1,5 +1,6 @@
 package com.playninelives.activity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
@@ -93,9 +94,14 @@ public class PickActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_pools) {
-
+            Intent i = new Intent(this, PoolListActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_share) {
-
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "I'm playing Nine Lives. Come join me!");
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.send_to)));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -115,7 +121,8 @@ public class PickActivity extends AppCompatActivity
         homeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 (new MakePickTask(game.getTeam1(), game.getId())).execute();
-                homeButton.getBackground().setColorFilter(Color.parseColor("#59C1DA"), PorterDuff.Mode.DARKEN);
+                homeButton.getBackground().setColorFilter(Color.parseColor("#E91E63"), PorterDuff.Mode.DARKEN);
+                homeButton.setTextColor(Color.parseColor("#FFFFFF"));
                 awayButton.setEnabled(false);
             }
         });
@@ -123,7 +130,8 @@ public class PickActivity extends AppCompatActivity
         awayButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 (new MakePickTask(game.getTeam2(), game.getId())).execute();
-                awayButton.getBackground().setColorFilter(Color.parseColor("#59C1DA"), PorterDuff.Mode.DARKEN);
+                awayButton.getBackground().setColorFilter(Color.parseColor("#E91E63"), PorterDuff.Mode.DARKEN);
+                awayButton.setTextColor(Color.parseColor("#FFFFFF"));
                 homeButton.setEnabled(false);
             }
         });

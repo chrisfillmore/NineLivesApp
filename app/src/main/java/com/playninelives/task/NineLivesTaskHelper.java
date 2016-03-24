@@ -48,8 +48,8 @@ public class NineLivesTaskHelper {
     public URL createUrl(String... paths) {
         URL url = null;
 
-        //String path = joinString(encode(paths), "/");
-        String path = joinString(paths, "/");
+        String path = joinString(encode(paths), "/");
+        //String path = joinString(paths, "/");
 
         try {
             url = new URL(getFullPath() + path);
