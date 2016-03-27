@@ -28,10 +28,7 @@ public abstract class GetDataTask<T> extends NineLivesTask<URL, String, T> {
     @Override
     protected T doInBackground(URL... urls) {
         String data = helper.downloadUrl(urls[0]);
-        T result = helper.gson.fromJson(data, c);
-        System.out.println("CHRIS: gson parse");
-        System.out.println(result);
-        return result;
+        return helper.gson.fromJson(data, c);
     }
 
 }

@@ -3,9 +3,7 @@ package com.playninelives.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,19 +18,22 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView;
 
 import com.playninelives.R;
 import com.playninelives.response.Game;
+import com.playninelives.response.GamePick;
+import com.playninelives.response.Picks;
 import com.playninelives.task.GetDataTask;
 import com.playninelives.task.NineLivesTask;
 
 import java.net.URL;
 
 public class PickActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        TaskContext<{
 
     TableLayout tableLayout;
+    Game[] games;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,14 @@ public class PickActivity extends AppCompatActivity
         return true;
     }
 
+    public void doThis(String s) {
+
+    }
+
+    public void doThis(int i) {
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -109,7 +118,7 @@ public class PickActivity extends AppCompatActivity
         return true;
     }
 
-    private TableRow createGameTableRow(final Game game) {
+    private TableRow createGameTableRow(final Game game, Picks pick) {
         TableRow tr = (TableRow)(LayoutInflater.from(this).inflate(R.layout.pick_table_row, tableLayout, false));
 
         final Button homeButton = (Button)tr.getChildAt(0);
@@ -118,25 +127,54 @@ public class PickActivity extends AppCompatActivity
         homeButton.setText(game.getTeam1());
         awayButton.setText(game.getTeam2());
 
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                (new MakePickTask(game.getTeam1(), game.getId())).execute();
-                homeButton.getBackground().setColorFilter(Color.parseColor("#E91E63"), PorterDuff.Mode.DARKEN);
-                homeButton.setTextColor(Color.parseColor("#FFFFFF"));
-                awayButton.setEnabled(false);
-            }
-        });
+        GamePick gamePick = new GamePick(game, pick);
 
-        awayButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                (new MakePickTask(game.getTeam2(), game.getId())).execute();
-                awayButton.getBackground().setColorFilter(Color.parseColor("#E91E63"), PorterDuff.Mode.DARKEN);
-                awayButton.setTextColor(Color.parseColor("#FFFFFF"));
-                homeButton.setEnabled(false);
+        if (gamePick.isPicked()) {
+            if (gamePick.isTeam1()) {
+                toggleSelectButtons(homeButton, awayButton);
+            } else {
+                toggleSelectButtons(awayButton, homeButton);
             }
-        });
+        } else {
+            homeButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    makePick(game.getTeam1(), game.getId());
+                    toggleSelectButtons(homeButton, awayButton);
+                }
+            });
+
+            awayButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    makePick(game.getTeam2(), game.getId());
+                    toggleSelectButtons(awayButton, homeButton);
+                }
+            });
+        }
 
         return tr;
+    }
+
+    private void makePick(String team, int gameId) {
+        (new MakePickTask(team, gameId)).execute();
+    }
+
+    private void toggleSelectButtons(Button selected, Button unselected) {
+        selected.getBackground().setColorFilter(Color.parseColor("#E91E63"), PorterDuff.Mode.DARKEN);
+        selected.setTextColor(Color.parseColor("#FFFFFF"));
+        selected.setEnabled(false);
+        unselected.setEnabled(false);
+    }
+
+    private Picks getPick(Game g, Picks[] picks) {
+        int gameId = g.getId();
+
+        for (Picks p : picks) {
+            if (p.getGame() == gameId) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
     private class MakePickTask extends NineLivesTask<URL, Void, Void> {
@@ -177,12 +215,33 @@ public class PickActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(final Game[] games) {
+        protected void onPostExecute(final Game[] g) {
+            games = g;
+            (new GetPicksTask("nathan@digitalda.ca")).execute();
+
+        }
+    }
+
+    private class GetPicksTask extends GetDataTask<Picks[]> {
+
+        String user;
+
+        public GetPicksTask(String user) {
+            super(Picks[].class);
+            this.user = user;
+        }
+
+        @Override
+        public String getPath() {
+            return "picks/" + user;
+        }
+
+        @Override
+        protected void onPostExecute(final Picks[] picks) {
 
             for (Game game : games) {
-                tableLayout.addView(createGameTableRow(game));
+                tableLayout.addView(createGameTableRow(game, getPick(game, picks)));
             }
-
         }
     }
 }
