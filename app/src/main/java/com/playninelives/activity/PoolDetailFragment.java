@@ -1,6 +1,7 @@
 package com.playninelives.activity;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,8 +11,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.playninelives.R;
-import com.playninelives.activity.dummy.DummyContent;
-import com.playninelives.response.MasterDetailItem;
+import com.playninelives.response.PoolDetail;
+import com.playninelives.task.GetDataTask;
+
+import java.net.URL;
 
 /**
  * A fragment representing a single Pool detail screen.
@@ -20,21 +23,12 @@ import com.playninelives.response.MasterDetailItem;
  * on handsets.
  */
 public class PoolDetailFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
+
     public static final String ARG_ITEM_ID = "item_id";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private MasterDetailItem mItem;
+    CollapsingToolbarLayout appBarLayout = null;
+    View root = null;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public PoolDetailFragment() {
     }
 
@@ -43,29 +37,46 @@ public class PoolDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            //mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
 
             Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.getContent());
-            }
+            appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.pool_detail, container, false);
+        root = inflater.inflate(R.layout.pool_detail, container, false);
+        return root;
+    }
 
-        // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.pool_detail)).setText(mItem.getDetails());
+    private class GetPoolDetail extends GetDataTask<PoolDetail> {
+
+        String id;
+
+        public GetPoolDetail(String id) {
+            this.id = id;
         }
 
-        return rootView;
+        public AsyncTask<URL, String, PoolDetail> execute() {
+            return super.execute(id);
+        }
+
+        @Override
+        public String getPath() {
+            return "pool/";
+        }
+
+        @Override
+        public void onPostExecute(PoolDetail poolDetail) {
+            if (appBarLayout != null) {
+                appBarLayout.setTitle(poolDetail.getPool().getContent());
+            }
+
+            if (root != null) {
+                ((TextView) root.findViewById(R.id.pool_detail)).setText(poolDetail.getPool().getDetails());
+            }
+        }
     }
 }

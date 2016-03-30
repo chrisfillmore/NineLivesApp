@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.playninelives.R;
 import com.playninelives.response.LoginResponse;
 import com.playninelives.task.GetDataTask;
+import com.playninelives.util.Session;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,13 +52,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final int REQUEST_READ_CONTACTS = 0;
 
     /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
@@ -71,6 +65,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (hasLoggedIn()) {
+            startPickActivity();
+            return;
+        }
+
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -296,28 +296,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         int IS_PRIMARY = 1;
     }
 
+    private void startPickActivity() {
+        finish();
+        Intent i = new Intent(this, PickActivity.class);
+        startActivity(i);
+    }
+
+    private void setUserId(int id) {
+        (new Session(this)).setUserId(id);
+    }
+
+    private boolean hasLoggedIn() {
+        return (new Session(this)).getUserId() != -1;
+    }
+
     private class UserLoginTask extends GetDataTask<LoginResponse> {
 
         private final String mEmail;
         private final String mPassword;
 
-        UserLoginTask(String email, String password) {
+        public UserLoginTask() {
+            this(null, null);
+        }
+
+        public UserLoginTask(String email, String password) {
             super(LoginResponse.class);
             mEmail = email;
             mPassword = password;
-        }
-
-        @Override
-        protected LoginResponse doInBackground(URL... urls) {
-            LoginResponse response = super.doInBackground(urls);
-
-            if (response.isUnregisteredUser()) {
-                // register a new user
-                System.out.println("CHRIS: register a new user");
-            }
-
-            return response;
-
         }
 
         public AsyncTask<URL, String, LoginResponse> execute() {
@@ -328,17 +333,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onPostExecute(final LoginResponse response) {
             mAuthTask = null;
             showProgress(false);
-/*
-            if (response.isInvalidPassword()) {
+
+            if (response == null || response.isInvalidPassword()) {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
-                return;
-            }*/
-            System.out.println("CHRIS: You're in.");
-            //finish();
-            //startActivity() nav drawer activity
-            Intent i = new Intent(LoginActivity.this, PickActivity.class);
-            startActivity(i);
+            } else if (response.isUnregisteredUser()) {
+                // register a new user
+                new RegisterUserTask(mEmail, mPassword).execute();
+            } else {
+                setUserId(response.getId());
+                startPickActivity();
+            }
+
         }
 
         @Override
@@ -350,6 +356,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         public String getPath() {
             return "user/login/";
+        }
+    }
+
+    private class RegisterUserTask extends GetDataTask<LoginResponse> {
+
+        private String email;
+        private String password;
+
+        public RegisterUserTask(String email, String password) {
+            super(LoginResponse.class);
+            this.email = email;
+            this.password = password;
+        }
+
+        public AsyncTask<URL, String, LoginResponse> execute() {
+            return super.execute(email, password);
+        }
+
+        @Override
+        protected void onPostExecute(final LoginResponse response) {
+            // Display snackbar
+            System.out.println("CHRIS: registration done");
+            setUserId(response.getId());
+            startPickActivity();
+        }
+
+        @Override
+        public String getPath() {
+            return "user/register/";
         }
     }
 }

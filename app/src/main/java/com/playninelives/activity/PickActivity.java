@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -15,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ActionMenuView;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -25,19 +25,20 @@ import com.playninelives.response.GamePick;
 import com.playninelives.response.Picks;
 import com.playninelives.task.GetDataTask;
 import com.playninelives.task.NineLivesTask;
+import com.playninelives.util.Session;
 
 import java.net.URL;
 
-public class PickActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        TaskContext<{
+public class PickActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener {
 
-    TableLayout tableLayout;
-    Game[] games;
+    TableLayout tableLayout = null;
+    Game[] games = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_pick);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -73,13 +74,6 @@ public class PickActivity extends AppCompatActivity
         return true;
     }
 
-    public void doThis(String s) {
-
-    }
-
-    public void doThis(int i) {
-
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -89,7 +83,10 @@ public class PickActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_signout) {
+            new Session(PickActivity.this).signOut();
+            Intent i = new Intent(this, LoginActivity.class);
+            startActivity(i);
             return true;
         }
 
@@ -116,6 +113,10 @@ public class PickActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private String getUserId() {
+        return String.valueOf(new Session(this).getUserId());
     }
 
     private TableRow createGameTableRow(final Game game, Picks pick) {
@@ -166,15 +167,21 @@ public class PickActivity extends AppCompatActivity
     }
 
     private Picks getPick(Game g, Picks[] picks) {
+        if (picks == null) {
+            return null;
+        }
+
         int gameId = g.getId();
+        Picks pick = null;
 
         for (Picks p : picks) {
             if (p.getGame() == gameId) {
-                return p;
+                pick = p;
+                break;
             }
         }
 
-        return null;
+        return pick;
     }
 
     private class MakePickTask extends NineLivesTask<URL, Void, Void> {
@@ -189,11 +196,11 @@ public class PickActivity extends AppCompatActivity
 
         @Override
         public String getPath() {
-            return "games/pick/";
+            return "games/picks/";
         }
 
         public void execute() {
-            super.execute(helper.createUrl("nathan@digitalda.ca", String.valueOf(gameId), team));
+            super.execute(helper.createUrl(getUserId(), String.valueOf(gameId), team));
         }
 
         @Override
@@ -217,8 +224,7 @@ public class PickActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(final Game[] g) {
             games = g;
-            (new GetPicksTask("nathan@digitalda.ca")).execute();
-
+            new GetPicksTask(getUserId()).execute();
         }
     }
 
@@ -233,14 +239,18 @@ public class PickActivity extends AppCompatActivity
 
         @Override
         public String getPath() {
-            return "picks/" + user;
+            return "games/picks/" + user;
         }
 
         @Override
         protected void onPostExecute(final Picks[] picks) {
+            if (games == null || tableLayout == null) {
+                return;
+            }
 
             for (Game game : games) {
-                tableLayout.addView(createGameTableRow(game, getPick(game, picks)));
+                Picks p = getPick(game, picks);
+                tableLayout.addView(createGameTableRow(game, p));
             }
         }
     }

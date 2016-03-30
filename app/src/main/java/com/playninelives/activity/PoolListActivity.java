@@ -6,11 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +19,6 @@ import android.view.MenuItem;
 
 import com.playninelives.R;
 
-import com.playninelives.activity.dummy.DummyContent;
 import com.playninelives.response.MasterDetailItem;
 import com.playninelives.response.Pool;
 import com.playninelives.task.GetDataTask;

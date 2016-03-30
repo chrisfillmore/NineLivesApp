@@ -7,18 +7,36 @@ public class Picks {
     private int team;
     private String teamName;
     private int game;
-    private int lives;
 
-    public Picks(int user, int team, String teamName, int game, int lives){
-        this(-1, user, team, teamName, game, lives);
-    }
-    public Picks(int id, int user, int team, String teamName, int game, int lives) {
+
+
+    public Picks(int id, int user, int team, String teamName, int game) {
         this.id = id;
         this.user = user;
         this.team = team;
         this.teamName = teamName;
         this.game = game;
-        this.lives = lives;
+
+    }
+    public Picks(int user, int team, String teamName, int game) {
+        this.id = -1;
+        this.user = user;
+        this.team = team;
+        this.teamName = teamName;
+        this.game = game;
+    }
+
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getTeamName() {
+        return teamName;
+    }
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
     public Picks() {
     }
@@ -38,29 +56,13 @@ public class Picks {
         this.team = team;
     }
 
-    public int getLives() {
-        return lives;
-    }
-
-    public void setLives(int lives) {
-        this.lives = lives;
-    }
-
     public int getGame() {
         return game;
     }
 
     public void setGame(int game) {
         this.game = game;
-    }
 
-
-    public String getTeamName() {
-        return teamName;
-    }
-
-    public void setTeamName(String teamName) {
-        this.teamName = teamName;
     }
 
 }
