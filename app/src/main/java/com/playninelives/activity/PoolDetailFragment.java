@@ -8,10 +8,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.playninelives.R;
 import com.playninelives.response.PoolDetail;
+import com.playninelives.response.User;
+import com.playninelives.response.UserPool;
 import com.playninelives.task.GetDataTask;
 
 import java.net.URL;
@@ -24,10 +28,18 @@ import java.net.URL;
  */
 public class PoolDetailFragment extends Fragment {
 
-    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_POOL_ID = "pool_id";
+    public static final String ARG_POOL_NAME = "pool_name";
+    public static final String ARG_POOL_DETAIL = "pool_detail";
+
+
+
+    private String poolName = "";
 
     CollapsingToolbarLayout appBarLayout = null;
-    View root = null;
+    LinearLayout root = null;
+
+    String poolId;
 
     public PoolDetailFragment() {
     }
@@ -35,31 +47,69 @@ public class PoolDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle args = getArguments().getBundle(ARG_POOL_DETAIL);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-
+        try {
+            poolId = args.getString(ARG_POOL_ID);
             Activity activity = this.getActivity();
             appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
 
+            poolName = args.getString(ARG_POOL_NAME);
+            loadPlayerList();
+
+        } catch (NullPointerException e) {
+            // Snackbar: invalid pool
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        root = inflater.inflate(R.layout.pool_detail, container, false);
+        root = (LinearLayout) inflater.inflate(R.layout.pool_detail, container, false);
+
+        if (appBarLayout != null) {
+            appBarLayout.setTitle(poolName);
+        }
+
         return root;
     }
 
-    private class GetPoolDetail extends GetDataTask<PoolDetail> {
+
+    public void loadPlayerList() {
+        new GetPoolPlayers(poolId).execute();
+    }
+
+    private void populateUserList(UserPool[] users) {
+
+        root.removeAllViews();
+
+        for (int i = 0; i < users.length; i++) {
+            UserPool user = users[i];
+            System.out.println("CHRIS: " + user.getUserName());
+            LinearLayout l = (LinearLayout)LayoutInflater.from(getContext()).inflate(R.layout.pool_member_row, root, false);
+            TextView userNameField = (TextView)l.findViewById(R.id.pool_member_name);
+            String text = String.format("%d. %s", i + 1, user.getUserName());
+            //userNameField.setText((i + 1) + " - " + user.getUserName());
+            userNameField.setText(text);
+
+            TextView livesField = (TextView)l.findViewById(R.id.pool_member_lives);
+            livesField.setText(String.valueOf(user.getUserLives()));
+            root.addView(l);
+        }
+
+
+    }
+
+    private class GetPoolPlayers extends GetDataTask<UserPool[]> {
 
         String id;
 
-        public GetPoolDetail(String id) {
+        public GetPoolPlayers(String id) {
+            super(UserPool[].class);
             this.id = id;
         }
 
-        public AsyncTask<URL, String, PoolDetail> execute() {
+        public AsyncTask<URL, String, UserPool[]> execute() {
             return super.execute(id);
         }
 
@@ -69,14 +119,14 @@ public class PoolDetailFragment extends Fragment {
         }
 
         @Override
-        public void onPostExecute(PoolDetail poolDetail) {
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(poolDetail.getPool().getContent());
-            }
+        public void onPostExecute(UserPool[] users) {
 
             if (root != null) {
-                ((TextView) root.findViewById(R.id.pool_detail)).setText(poolDetail.getPool().getDetails());
+                //((TextView) root.findViewById(R.id.pool_detail)).setText(playerList(users));
+                populateUserList(users);
             }
+
         }
     }
+
 }

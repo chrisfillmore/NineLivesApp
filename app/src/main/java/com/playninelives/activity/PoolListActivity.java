@@ -2,6 +2,7 @@ package com.playninelives.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
@@ -68,10 +69,12 @@ public class PoolListActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        GetPoolTask task = new GetPoolTask();
-        task.execute();
+        loadPools();
 
+    }
 
+    private void loadPools() {
+        new GetPoolTask().execute();
     }
 
     @Override
@@ -93,10 +96,11 @@ public class PoolListActivity extends AppCompatActivity {
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView, Pool[] pools) {
         List<MasterDetailItem> poolList = new ArrayList<MasterDetailItem>();
-        //pools.add(new Pool(0, "Nathan's Pool", "Nathan Howard", "", ""));
+
         for (Pool pool : pools) {
             poolList.add(pool);
         }
+
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(poolList));
     }
 
@@ -113,22 +117,30 @@ public class PoolListActivity extends AppCompatActivity {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.pool_list_content, parent, false);
+            //view.setBackgroundColor(Color.parseColor("#333333"));
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).getIdAsString());
+            //holder.mIdView.setText(mValues.get(position).getIdAsString());
             holder.mContentView.setText(mValues.get(position).getContent());
+            String leaderText = "Leader: " + mValues.get(position).getDetails();
+            holder.mLeaderView.setText(leaderText);
+
+            if (position % 2 == 0) {
+                holder.itemView.setBackgroundColor(Color.parseColor("#F5F5F5"));
+                //holder.mContentView.setBackgroundColor(Color.parseColor("#F5F5F5"));
+            }
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(PoolDetailFragment.ARG_ITEM_ID, holder.mItem.getIdAsString());
-
+                        arguments.putString(PoolDetailFragment.ARG_POOL_ID, holder.mItem.getIdAsString());
+                        arguments.putString(PoolDetailFragment.ARG_POOL_NAME, holder.mItem.getContent());
                         PoolDetailFragment fragment = new PoolDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -137,7 +149,11 @@ public class PoolListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, PoolDetailActivity.class);
-                        intent.putExtra(PoolDetailFragment.ARG_ITEM_ID, holder.mItem.getIdAsString());
+                        Bundle args = new Bundle();
+
+                        args.putString(PoolDetailFragment.ARG_POOL_ID, holder.mItem.getIdAsString());
+                        args.putString(PoolDetailFragment.ARG_POOL_NAME, holder.mItem.getContent());
+                            intent.putExtra(PoolDetailFragment.ARG_POOL_DETAIL, args);
 
                         context.startActivity(intent);
                     }
@@ -152,15 +168,17 @@ public class PoolListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
+            //public final TextView mIdView;
             public final TextView mContentView;
+            public final TextView mLeaderView;
             public MasterDetailItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
+                //mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mLeaderView = (TextView) view.findViewById(R.id.pool_leader);
             }
 
             @Override

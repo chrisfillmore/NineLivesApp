@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/poolMemberRow"
+        android:id="@+id/pool_member_name"
+        android:layout_weight="0.6"
+        tools:context="com.playninelives.activity.PoolDetailFragment" />
+
+    <TextView
+        style="@style/poolMemberRow"
+        android:layout_weight="0.2"
+        android:textAlignment="textEnd"
+        android:layout_gravity="end"
+        android:id="@+id/pool_member_lives" />
+
+</LinearLayout>

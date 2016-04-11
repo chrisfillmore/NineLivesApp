@@ -80,6 +80,7 @@ public class NineLivesTaskHelper {
         System.out.println("CHRIS: " + url);
         InputStream inputStream = null;
         HttpURLConnection connection = getHttpUrlConnection(url);
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
         String response = "";
 
         connection.setReadTimeout(10000);

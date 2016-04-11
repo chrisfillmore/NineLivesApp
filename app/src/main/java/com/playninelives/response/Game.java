@@ -12,6 +12,25 @@ public class Game {
     private int score2;
     private String date;
 
+    public String getTeam1img() {
+        return team1img;
+    }
+
+    public void setTeam1img(String team1img) {
+        this.team1img = team1img;
+    }
+
+    public String getTeam2img() {
+        return team2img;
+    }
+
+    public void setTeam2img(String team2img) {
+        this.team2img = team2img;
+    }
+
+    private String team1img;
+    private String team2img;
+
     public Game() {
     }
 

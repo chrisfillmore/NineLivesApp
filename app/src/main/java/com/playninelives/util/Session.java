@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 public class Session {
 
     public static final String USER_ID_PROP = "userId";
+    public static final String USER_NAME_PROP = "userName";
 
     private SharedPreferences prefs;
 
@@ -26,6 +27,16 @@ public class Session {
     }
 
     public void signOut() {
-        prefs.edit().putInt(USER_ID_PROP, -1).apply();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(USER_ID_PROP, -1).apply();
+        editor.putString(USER_NAME_PROP, null);
+    }
+
+    public void setUserName(String name) {
+        prefs.edit().putString(USER_NAME_PROP, name).apply();
+    }
+
+    public String getUserName() {
+        return prefs.getString(USER_NAME_PROP, null);
     }
 }

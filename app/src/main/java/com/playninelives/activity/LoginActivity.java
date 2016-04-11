@@ -58,6 +58,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     // UI references.
     private AutoCompleteTextView mEmailView;
+    private AutoCompleteTextView mNameView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
@@ -76,6 +77,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
+        mNameView = (AutoCompleteTextView) findViewById(R.id.name);
+
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -88,7 +91,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        final Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -96,8 +99,46 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        Button registerButton = (Button)findViewById(R.id.email_register_button);
+        registerButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View nameField = findViewById(R.id.name);
+                if (nameField.getVisibility() == View.GONE) {
+                    showRegisterUi();
+                } else if (nameField.getVisibility() == View.VISIBLE) {
+                    // get data and perform registration
+                    String email = mEmailView.getText().toString();
+                    String password = mPasswordView.getText().toString();
+                    String name = mNameView.getText().toString();
+                    new RegisterUserTask(email, password, name).execute();
+                }
+
+            }
+        });
+
+        final Button cancelButton = (Button)findViewById(R.id.cancel_button);
+        cancelButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View nameField = findViewById(R.id.name);
+                nameField.setVisibility(View.GONE);
+                cancelButton.setVisibility(View.GONE);
+                mEmailSignInButton.setVisibility(View.VISIBLE);
+            }
+        });
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    private void showRegisterUi() {
+        View nameField = findViewById(R.id.name);
+        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setVisibility(View.GONE);
+        Button cancelButton = (Button)findViewById(R.id.cancel_button);
+        cancelButton.setVisibility(View.VISIBLE);
+        nameField.setVisibility(View.VISIBLE);
     }
 
     private void populateAutoComplete() {
@@ -302,8 +343,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         startActivity(i);
     }
 
-    private void setUserId(int id) {
-        (new Session(this)).setUserId(id);
+    private void setUserInfo(int id, String name) {
+        Session s = new Session(this);
+        s.setUserId(id);
+        s.setUserName(name);
     }
 
     private boolean hasLoggedIn() {
@@ -334,14 +377,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
 
-            if (response == null || response.isInvalidPassword()) {
+            if (response == null || response.isInvalidPassword() || response.isUnregisteredUser()) {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
-            } else if (response.isUnregisteredUser()) {
-                // register a new user
-                new RegisterUserTask(mEmail, mPassword).execute();
             } else {
-                setUserId(response.getId());
+                setUserInfo(response.getId(), response.getName());
                 startPickActivity();
             }
 
@@ -363,22 +403,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private String email;
         private String password;
+        private String name;
 
-        public RegisterUserTask(String email, String password) {
+        public RegisterUserTask(String email, String password, String name) {
             super(LoginResponse.class);
             this.email = email;
             this.password = password;
+            this.name = name;
         }
 
         public AsyncTask<URL, String, LoginResponse> execute() {
-            return super.execute(email, password);
+            return super.execute(name, email, password);
         }
 
         @Override
         protected void onPostExecute(final LoginResponse response) {
             // Display snackbar
             System.out.println("CHRIS: registration done");
-            setUserId(response.getId());
+            setUserInfo(response.getId(), response.getName());
             startPickActivity();
         }
 

@@ -21,16 +21,27 @@ public class LoginResponse {
         return id;
     }
 
-    public LoginResponse(boolean success, boolean invalidPassword, boolean unregisteredUser, int id) {
+    public LoginResponse(boolean success, boolean invalidPassword, boolean unregisteredUser, int id, String name) {
         this.success = success;
         this.invalidPassword = invalidPassword;
         this.unregisteredUser = unregisteredUser;
         this.id = id;
+        this.name = name;
     }
 
     private boolean success;
     private boolean invalidPassword;
     private boolean unregisteredUser;
     private int id;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    private String name;
 
 }

@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.playninelives.R;
 import com.playninelives.task.NineLivesTask;
+import com.playninelives.util.Session;
 
 import java.net.URL;
 
@@ -66,7 +67,8 @@ public class CreatePoolActivity extends AppCompatActivity {
         }
 
         public void execute() {
-            super.execute(helper.createUrl(name, "nathan@digitalda.ca", password));
+            String userId = String.valueOf(new Session(CreatePoolActivity.this).getUserId());
+            super.execute(helper.createUrl(name, userId, password));
         }
 
         @Override
